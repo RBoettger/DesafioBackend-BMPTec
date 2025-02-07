@@ -6,7 +6,7 @@ namespace DesafioBackend.Services
     {
         Task<List<PlaylistModel>> BuscarPlaylists();
         Task<List<string>> ExibirGeneros();
-        Task<List<string>> FiltrarArtistasPorGenero();
-        Task<List<PlaylistModel>> FiltrarMusicasDeUmArtista(string nome);
+        Task<List<string>> FiltrarArtistasPorGenero(string genre);
+        Task<List<PlaylistModel>> FiltrarMusicasDeUmArtista(string name);
     }
 }

@@ -67,13 +67,13 @@ namespace DesafioBackend.Services
             }
         }
 
-        public async Task<List<string>> FiltrarArtistasPorGenero()
+        public async Task<List<string>> FiltrarArtistasPorGenero(string genre)
         {
             try
             {
                 var playlists = await BuscarPlaylists();
-                return playlists.OrderBy(p => p.Genre)
-                                .Where(p => !string.IsNullOrEmpty(p.Genre) && !string.IsNullOrEmpty(p.Artist))
+                return playlists.Where(p => !string.IsNullOrEmpty(p.Genre) && p.Genre.Equals(genre, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(p.Artist))
+                                .OrderBy(p => p.Artist)
                                 .Select(p => $"{p.Genre} - {p.Artist}")
                                 .Distinct()
                                 .ToList();
@@ -84,6 +84,7 @@ namespace DesafioBackend.Services
                 return new List<string>();
             }
         }
+
 
         public async Task<List<PlaylistModel>> FiltrarMusicasDeUmArtista(string nome)
         {

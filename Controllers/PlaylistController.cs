@@ -31,9 +31,9 @@ namespace DesafioBackend.Controllers
         }
 
         [HttpGet("Filtrar por genero")]
-        public async Task<ActionResult<List<string>>> GetFilterForGenre()
+        public async Task<ActionResult<List<string>>> GetFilterForGenre(string genre)
         {
-            var filter = await _service.FiltrarArtistasPorGenero();
+            var filter = await _service.FiltrarArtistasPorGenero(genre);
             return Ok(filter);
         }
 
