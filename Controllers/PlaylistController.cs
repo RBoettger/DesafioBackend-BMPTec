@@ -4,45 +4,57 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DesafioBackend.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/playlists")]
     [ApiController]
     public class PlaylistController : ControllerBase
     {
-        private IPlaylistService _service;
+        private readonly IPlaylistService _service;
 
         public PlaylistController(IPlaylistService service)
         {
             _service = service;
         }
 
-
         [HttpGet]
-        public async Task<ActionResult<List<PlaylistModel>>> Get()
+        public async Task<ActionResult<List<PlaylistModel>>> Buscar()
         {
             var playlists = await _service.BuscarPlaylists();
             return Ok(playlists);
         }
 
-        [HttpGet("Exibir genero")]
-        public async Task<ActionResult<List<PlaylistModel>>> GetGenre()
+        [HttpGet("buscar/{termo}")]
+        public async Task<ActionResult<List<PlaylistModel>>> BuscarArtistaOuMusica(string termo)
         {
-            var genre = await _service.ExibirGeneros();
-            return Ok(genre);
+            var resultado = await _service.BuscarArtistaOuMusica(termo);
+            return Ok(resultado);
         }
 
-        [HttpGet("Filtrar por genero")]
-        public async Task<ActionResult<List<string>>> GetFilterForGenre()
+        [HttpGet("generos")]
+        public async Task<ActionResult<List<string>>> ExibirGeneros()
         {
-            var filter = await _service.FiltrarArtistasPorGenero();
-            return Ok(filter);
+            var generos = await _service.ExibirGeneros();
+            return Ok(generos);
         }
 
-        [HttpGet("Filtrar musicas por artista")]
-        public async Task<ActionResult<List<PlaylistModel>>> GetSongForArtist(string artist)
+        [HttpGet("artistas/{genero}")]
+        public async Task<ActionResult<List<string>>> FiltrarArtistasPorGenero(string genero)
         {
-            var songs = await _service.FiltrarMusicasDeUmArtista(artist);
-            return Ok(songs);
+            var artistas = await _service.FiltrarArtistasPorGenero(genero);
+            return Ok(artistas);
         }
 
+        [HttpGet("musicas/{artista}")]
+        public async Task<ActionResult<List<PlaylistModel>>> FiltrarMusicasDeUmArtista(string artista)
+        {
+            var musicas = await _service.FiltrarMusicasDeUmArtista(artista);
+            return Ok(musicas);
+        }
+
+        [HttpGet("historico")]
+        public async Task<ActionResult<List<HistoricoPesquisa>>> BuscarHistorico()
+        {
+            var historico = await _service.Historico("");
+            return Ok(historico);
+        }
     }
 }
