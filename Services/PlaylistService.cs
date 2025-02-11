@@ -20,12 +20,36 @@ namespace DesafioBackend.Services
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
-        public async Task<List<HistoricoPesquisa>> Historico(string artistOrSong)
+        public async Task<List<PlaylistModel>> BuscarPlaylists()
         {
-            return await _context.HistoricoPesquisas
-                .Where(h => h.TermoPesquisa.Contains(artistOrSong))
-                .OrderByDescending(h => h.DataConsulta)
-                .ToListAsync();
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                using var response = await client.GetAsync(endpoint);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Erro ao acessar API: {response.StatusCode}");
+                    return new List<PlaylistModel>();
+                }
+                var apiResponse = await response.Content.ReadAsStreamAsync();
+                var playlistResponse = JsonSerializer.Deserialize<List<PlaylistModel>>(apiResponse, _options);
+                return playlistResponse.ToList() ??
+                                    new List<PlaylistModel>();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Erro na requisição HTTP: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Erro ao desserializar JSON: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro inesperado: {ex.Message}");
+            }
+
+            return new List<PlaylistModel>();
         }
 
         public async Task<List<PlaylistModel>> BuscarArtistaOuMusica(string artistOrSong)
@@ -60,55 +84,6 @@ namespace DesafioBackend.Services
 
                 return resultado;
         }
-        public async Task<List<PlaylistModel>> BuscarPlaylists()
-        {
-            try
-            {
-                var client = _httpClientFactory.CreateClient();
-                using var response = await client.GetAsync(endpoint);
-                if (!response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine($"Erro ao acessar API: {response.StatusCode}");
-                    return new List<PlaylistModel>();
-                }
-                var apiResponse = await response.Content.ReadAsStreamAsync();
-                var playlistResponse = JsonSerializer.Deserialize<List<PlaylistModel>>(apiResponse, _options);
-                return playlistResponse.ToList() ??
-                                    new List<PlaylistModel>();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine($"Erro na requisição HTTP: {ex.Message}");
-            }
-            catch (JsonException ex)
-            {
-                Console.WriteLine($"Erro ao desserializar JSON: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro inesperado: {ex.Message}");
-            }
-
-            return new List<PlaylistModel>();
-        }
-
-        public async Task<List<string>> ExibirGeneros()
-        {
-            try
-            {
-                var playlists = await BuscarPlaylists();
-                return playlists.Select(p => p.Genre)
-                                .Where(g => !string.IsNullOrEmpty(g))
-                                .Distinct()
-                                .ToList();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao exibir gêneros: {ex.Message}");
-                return new List<string>();
-            }
-        }
-
         public async Task<List<string>> FiltrarArtistasPorGenero(string genre)
         {
             try
@@ -147,6 +122,31 @@ namespace DesafioBackend.Services
                 Console.WriteLine($"Erro ao filtrar músicas de um artista: {ex.Message}");
                 return new List<PlaylistModel>();
             }
+        }
+
+        public async Task<List<string>> ExibirGeneros()
+        {
+            try
+            {
+                var playlists = await BuscarPlaylists();
+                return playlists.Select(p => p.Genre)
+                                .Where(g => !string.IsNullOrEmpty(g))
+                                .Distinct()
+                                .ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao exibir gêneros: {ex.Message}");
+                return new List<string>();
+            }
+        }
+
+        public async Task<List<HistoricoPesquisa>> Historico(string artistOrSong)
+        {
+            return await _context.HistoricoPesquisas
+                .Where(h => h.TermoPesquisa.Contains(artistOrSong))
+                .OrderByDescending(h => h.DataConsulta)
+                .ToListAsync();
         }
 
     }
